@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zaplay Games | Browser Games</title>
+  <link rel="stylesheet" href="shared/styles.css">
+</head>
+<body>
+  <div id="file-warning" class="file-warning" hidden>
+    <strong>Local preview blocked.</strong>
+    Browsers block <code>file://</code> pages inside iframes.
+    Double-click <code>start.bat</code> or run <code>start.ps1</code>, then open
+    <a id="local-hub-link" href="http://localhost:3000/">http://localhost:3000/</a>
+    in Chrome or Edge.
+  </div>
+  <header class="hub-header">
+    <div class="brand-mark">Z</div>
+    <h1 class="logo">Zaplay Games</h1>
+    <p class="tagline">Browser Games</p>
+    <p class="desc">A bright arcade of quick-fire browser games, fresh 3D action, and fast racing fun for every session.</p>
+  </header>
+  <div class="filters" id="filters">
+    <button class="active" data-filter="all">All</button>
+    <button data-filter="online">Online</button>
+    <button data-filter="offline">Offline</button>
+  </div>
+  <main class="game-grid" id="grid"></main>
+  <footer class="hub-footer">
+    <p>Zaplay Games • Browser Games</p>
+  </footer>
+  <script type="module">
+    import { initHubPreviews, attachPreviewCanvas } from './shared/hub-previews.js';
+
+    if (location.protocol === 'file:') {
+      document.getElementById('file-warning').hidden = false;
+      document.getElementById('local-hub-link').href = 'http://localhost:3000/';
+    }
+
+    const GAMES = [
+      { id: 'team-shooter', name: 'Combat Reloaded', path: 'games/team-shooter/', online: true, genre: '3D Shooter' },
+      { id: 'car-racing', name: 'MR Racer', path: 'games/car-racing/', online: true, genre: '3D Racing' },
+      { id: 'atv-rider', name: 'ATV Rider', path: 'games/atv-rider/', online: true, genre: 'Racing RPG' },
+      { id: 'online-trivia', name: 'Live Trivia', path: 'games/online-trivia/', online: true, genre: 'Quiz' },
+      { id: 'online-bomber', name: 'Bomb Arena', path: 'games/online-bomber/', online: true, genre: 'Battle' },
+      { id: 'snake', name: 'Snake', path: 'games/snake/', online: false, genre: 'Arcade' },
+      { id: 'tetris', name: 'Block Drop', path: 'games/tetris/', online: false, genre: 'Puzzle' },
+      { id: 'breakout', name: 'Breakout', path: 'games/breakout/', online: false, genre: 'Arcade' },
+      { id: 'memory', name: 'Memory Match', path: 'games/memory/', online: false, genre: 'Memory' },
+      { id: '2048', name: '2048', path: 'games/2048/', online: false, genre: 'Puzzle' },
+      { id: 'minesweeper', name: 'Minesweeper', path: 'games/minesweeper/', online: false, genre: 'Logic' },
+      { id: 'sudoku', name: 'Sudoku', path: 'games/sudoku/', online: false, genre: 'Logic' },
+      { id: 'chess', name: 'Chess vs AI', path: 'games/chess/', online: false, genre: 'Board' },
+      { id: 'checkers', name: 'Checkers vs AI', path: 'games/checkers/', online: false, genre: 'Board' },
+      { id: 'connect-four', name: 'Connect Four', path: 'games/connect-four/', online: false, genre: 'Board' },
+      { id: 'flappy', name: 'Flappy Sky', path: 'games/flappy/', online: false, genre: 'Arcade' },
+      { id: 'platformer', name: 'Platform Jump', path: 'games/platformer/', online: false, genre: 'Platform' },
+      { id: 'tower-defense', name: 'Tower Defense', path: 'games/tower-defense/', online: false, genre: 'Strategy' },
+      { id: 'space-invaders', name: 'Space Invaders', path: 'games/space-invaders/', online: false, genre: 'Shooter' },
+      { id: 'asteroids', name: 'Asteroids', path: 'games/asteroids/', online: false, genre: 'Shooter' },
+      { id: 'pac-maze', name: 'Maze Chomper', path: 'games/pac-maze/', online: false, genre: 'Maze' },
+      { id: 'whack-mole', name: 'Whack-a-Mole', path: 'games/whack-mole/', online: false, genre: 'Arcade' },
+      { id: 'simon', name: 'Simon Says', path: 'games/simon/', online: false, genre: 'Memory' },
+      { id: 'sliding-puzzle', name: '15 Puzzle', path: 'games/sliding-puzzle/', online: false, genre: 'Puzzle' },
+      { id: 'hangman', name: 'Hangman', path: 'games/hangman/', online: false, genre: 'Word' },
+      { id: 'word-search', name: 'Word Search', path: 'games/word-search/', online: false, genre: 'Word' },
+      { id: 'tic-tac-toe', name: 'Tic-Tac-Toe', path: 'games/tic-tac-toe/', online: false, genre: 'Board' },
+      { id: 'pong', name: 'Pong', path: 'games/pong/', online: false, genre: 'Arcade' },
+      { id: 'brick-power', name: 'Power Bricks', path: 'games/brick-power/', online: false, genre: 'Arcade' },
+      { id: 'zombie-survival', name: 'Zombie Survival', path: 'games/zombie-survival/', online: false, genre: 'Survival' },
+    ];
+
+    const grid = document.getElementById('grid');
+
+    function render(filter) {
+      grid.innerHTML = '';
+      GAMES.filter(g => filter === 'all' || (filter === 'online' ? g.online : !g.online))
+        .forEach(g => {
+          const card = document.createElement('article');
+          card.className = 'game-card';
+          card.dataset.online = g.online;
+          attachPreviewCanvas(card, g.id);
+
+          const body = document.createElement('div');
+          body.className = 'game-card-body';
+          body.innerHTML = `
+            <h3>${g.name}</h3>
+            <div class="tags">
+              <span class="tag ${g.online ? 'online' : 'offline'}">${g.online ? 'Online' : 'Offline'}</span>
+              <span class="tag genre">${g.genre}</span>
+            </div>
+            <a class="play" href="${g.path}">Play Now</a>`;
+          card.appendChild(body);
+          grid.appendChild(card);
+        });
+    }
+
+    render('all');
+    initHubPreviews();
+
+    document.getElementById('filters').addEventListener('click', e => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render(btn.dataset.filter);
+    });
+  </script>
+</body>
+</html>
